@@ -1,0 +1,31 @@
+{
+  "name": "gemus",
+  "version": "0.1.0",
+  "description": "Build node-based AI design workflows on the Gemus canvas from your own Codex. Describe a workflow in plain language and Gemus creates the nodes, generates images/video/3D/PPT, and opens the result at gemus.ai.",
+  "author": {
+    "name": "Gemus",
+    "url": "https://gemus.ai"
+  },
+  "homepage": "https://gemus.ai",
+  "repository": "https://github.com/Gemus-AI/Gemus",
+  "license": "UNLICENSED",
+  "keywords": ["design", "ai", "image-generation", "workflow", "canvas"],
+  "skills": "./skills/",
+  "hooks": "./.codex-plugin/hooks/hooks.json",
+  "interface": {
+    "displayName": "Gemus",
+    "shortDescription": "AI design workflows on the Gemus canvas",
+    "longDescription": "Gemus is a visual AI design workflow platform. This plugin adds a Stop hook + skills so your local Codex can build workflows, run AI generation, and automatically backfill Codex's own image generations onto the planned canvas nodes. Connect the Gemus MCP server with your own gemus.ai API key via the local companion (codex mcp add gemus --env GEMUS_KEY=... -- npx -y @gemus/mcp-proxy), then trust the Stop hook with /hooks. View results at gemus.ai.",
+    "developerName": "Gemus",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://gemus.ai",
+    "termsOfServiceURL": "https://gemus.ai/terms",
+    "privacyPolicyURL": "https://gemus.ai/privacy",
+    "defaultPrompt": [
+      "Use Gemus to build a workflow for a coffee brand identity.",
+      "Ask Gemus to generate a hero image and open the canvas."
+    ],
+    "brandColor": "#10A37F"
+  }
+}
