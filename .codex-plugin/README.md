@@ -10,11 +10,11 @@ user's own `mak_` key.
 
 | File | Purpose |
 |------|---------|
-| `plugin.json` | Codex plugin manifest (metadata + `interface` + `skills`/`hooks` pointers) |
+| `plugin.json` | Codex plugin manifest (metadata + `interface` + root `skills` pointer) |
 | `hooks/hooks.json` | Declares the `Stop` hook (command → `stop-backfill.mjs`) |
 | `hooks/stop-backfill.mjs` | Turn-end relay: reads the Stop payload, POSTs `transcript_path`+`turn_id` to the local proxy over loopback so it backfills |
-| `skills/getting-started.md` | Orientation for Mode B (companion + key, not OAuth) |
-| `skills/client-delivered-imagegen.md` | Steering: use `codex-imagen`, never self-forward, `awaiting_backfill` is on-track |
+| `../skills/gemus-getting-started/SKILL.md` | Multi-node planning, prompt wiring, execution, and canvas-opening workflow |
+| `../skills/gemus-codex-imagen/SKILL.md` | Local image generation and automatic backfill protocol |
 
 There is **no `.mcp.json`**: the companion is registered by the user locally (see below), because a
 public manifest can't carry a per-user key and Codex does not interpolate `${VAR}` in an MCP `env`
@@ -37,8 +37,8 @@ codex plugin add gemus@gemus
 ## Distribution (Step 7)
 
 The Gemus monorepo is **private + large**, so it can't be the public marketplace source. The plugin
-ships from a **separate lightweight public repo** whose contents are generated from this directory
-(SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/` (`.codex-plugin/` +
+ships from a **separate lightweight public repo** whose contents are generated from this monorepo
+(SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/` (`.codex-plugin/` + `skills/` +
 `.agents/plugins/marketplace.json`, the real-machine-validated layout). One-time human step: create the
 public repo (proposed `Gemus-AI/gemus-codex-plugin`), push the packed output; re-run the script + push
 on each plugin change. `codex plugin marketplace add <public repo>` then resolves `gemus@gemus`.
