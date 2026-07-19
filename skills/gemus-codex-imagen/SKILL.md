@@ -5,11 +5,13 @@ description: Use when a Gemus workflow creates or runs image-generation nodes fr
 
 # Codex Image Generation On Gemus
 
-For every new image-generation node, default to `config.model = "codex-imagen"` and Codex's built-in image generator. Use a Gemus platform model only when the user explicitly requests one.
+For every new image-generation node, default to a Gemus **platform** image model: set `config.model` to a platform model and run it with `execute`. Platform generation is reliable and needs no backfill.
 
-## Backfill Protocol
+Codex's built-in image generator (`config.model = "codex-imagen"`) depends on turn-end backfill, which is currently unreliable (empty or mismatched nodes). Use it ONLY when the user explicitly asks for Codex's own image generation.
 
-Keep one pending codex-imagen node per turn:
+## Backfill Protocol (codex-imagen only)
+
+Only when the user has explicitly opted into codex-imagen, keep one pending codex-imagen node per turn:
 
 1. Create the node first through the workflow planner or focused canvas editor.
 2. Call the single-node runner with `dryRun: true`. Read its `resolvedPrompt` and reference image URLs.

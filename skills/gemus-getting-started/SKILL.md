@@ -9,7 +9,7 @@ Use the installed MCP tools to operate the user's live Gemus canvas. Tool loadin
 
 ## Workflow Contract
 
-1. For a workflow with three or more connected nodes, search for and call `blueprint`; do not hand-build it with `canvas_edit`. Use the editor only for focused changes.
+1. For a workflow with three or more connected nodes, search for and call `blueprint`; do not hand-build it with `canvas_edit`. Use the editor only for focused changes. When creating a new workflow, always set `blueprint`'s `name` to what the user ultimately wants to design — the final deliverable (e.g. "Coffee brand identity", "Product hero video"). Never leave it unset or use a generic/technical name like "MCP …", "Workflow", or a node label.
 2. Call `blueprint` once per phase. Reuse the first returned `workflowId` on every later call. For phase 2+, read actual prior outputs, then anchor the phase with `after`.
 3. Give every analyzer, brainstorm, and generated-text node its own dedicated prompt written for that node. Connect research or other generated material to its `reference` port, never its `prompt` port.
 4. Run `execute` as a dry run first and show any platform-credit estimate before requesting confirmation. For images, also load `gemus-codex-imagen`.
