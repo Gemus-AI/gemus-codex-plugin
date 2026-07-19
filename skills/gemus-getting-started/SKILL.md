@@ -17,6 +17,18 @@ Use the installed MCP tools to operate the user's live Gemus canvas. Tool loadin
 
 Use `node_list` for node/model discovery and `canvas_read` for current IDs, outputs, ports, and status.
 
+## Presentation decks
+
+When the user wants Codex to design and fill a presentation directly on the Gemus canvas, use the MCP PPT editor instead of executing the `gen-ppt` node's configured generation model:
+
+1. Ensure a `gen-ppt` node exists, creating one with `canvas_edit` when needed. Search for `ppt_edit` with `tool_search` if it is not already loaded.
+2. Read the selected style resource, such as `skill://corporate`, then its `templates/manifest.json` and the chosen slide templates. Use each template's registered `kind` and `skeletonId`.
+3. Call `ppt_edit` with `action: "init_deck"` once. Keep the returned revision, starting at `0` for a new deck.
+4. Call `write_slide_html` once per slide and pass the revision returned by the previous write. Omit `slideId` to create a new slide. Pass `slideId` to update an existing slide.
+5. For edits, call `canvas_read(nodeId)` to get `deckSummary`, then `canvas_read(nodeId, slideId)` to read the target HTML before writing the update.
+
+Do not call a retired structured slide-rendering action. Direct `ppt_edit` mutations do not use the `execute` dry-run/credit flow; only run the `gen-ppt` node when the user explicitly asks for its model-driven generation pipeline.
+
 ## Domain skills
 
 Before planning or creating a domain-specific workflow, check whether a matching Gemus Skill exists; if it does and would improve output quality, read it first with `ReadMcpResourceTool({ uri: "skill://..." })`. **Skip it for simple tasks, or when you already have sufficient context.** Reading a skill is an optional quality boost, not a gate — never block or stall on it.
