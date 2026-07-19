@@ -34,14 +34,25 @@ codex plugin add gemus@gemus
 #    the canvas as an orphan node (proxy idle-timer salvage), just not on the planned node.
 ```
 
-## Distribution (Step 7)
+## Distribution (automated — Issue #2094)
 
 The Gemus monorepo is **private + large**, so it can't be the public marketplace source. The plugin
-ships from a **separate lightweight public repo** whose contents are generated from this monorepo
-(SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/` (`.codex-plugin/` + `skills/` +
-`.agents/plugins/marketplace.json`, the real-machine-validated layout). One-time human step: create the
-public repo (proposed `Gemus-AI/gemus-codex-plugin`), push the packed output; re-run the script + push
-on each plugin change. `codex plugin marketplace add <public repo>` then resolves `gemus@gemus`.
+ships from a **separate lightweight public repo** (`Gemus-AI/gemus-codex-plugin`) whose contents are
+generated from this monorepo (SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/`
+(`.codex-plugin/` + `skills/` + `.agents/plugins/marketplace.json`, the real-machine-validated layout).
+
+**Sync is automatic**: `.github/workflows/publish-codex-plugin.yml` fires on every master push touching
+`.codex-plugin/**`, `skills/**`, or the pack script, re-packs, and `rsync --delete`s the tree onto the
+mirror. The mirror is a **pure derived artifact** — never push to it by hand once the workflow is live
+(a manual push racing the automated one gets rejected non-fast-forward), and any file not produced by
+the pack script is deleted on the next sync. A version bump in `plugin.json` is enforced by the
+`check:codex-plugin-version` CI gate, so users always get an upgrade signal. `codex plugin marketplace
+add Gemus-AI/gemus-codex-plugin` then resolves `gemus@gemus`.
+
+**One-time admin prerequisite**: a fine-grained PAT scoped to `Gemus-AI/gemus-codex-plugin` only,
+`Contents: Read and write`, stored as the `CODEX_PLUGIN_PUSH_TOKEN` Actions secret (see the workflow
+header). Also confirm master branch protection is PR-only with `Code Quality Check` required, so the
+version-drift gate can't be bypassed by a direct push.
 
 ## Validated (real Codex, codex-cli 0.142.2)
 
@@ -58,6 +69,8 @@ on each plugin change. `codex plugin marketplace add <public repo>` then resolve
 
 1. **Publish `@gemus/mcp-proxy`** (+ `@gemus/codex-backfill-core`) to npm (`publish-mcp-proxy.yml`) so
    `npx -y @gemus/mcp-proxy` resolves.
-2. **Create the public plugin repo** and push the packed output (above).
+2. ~~Create the public plugin repo and push the packed output~~ — done; sync is now automated by
+   `publish-codex-plugin.yml` (Issue #2094). Remaining one-time admin step: add the
+   `CODEX_PLUGIN_PUSH_TOKEN` secret (see "Distribution" above).
 3. **Assets/legal**: add `composerIcon` / `logo` / `screenshots` to `interface` and confirm
    `gemus.ai/terms` & `/privacy` before any official-marketplace submission.
