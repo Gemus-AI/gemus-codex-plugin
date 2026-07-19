@@ -1,6 +1,6 @@
 {
   "name": "gemus",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Build node-based AI design workflows on the Gemus canvas from your own Codex. Describe a workflow in plain language and Gemus creates the nodes, generates images/video/3D/PPT, and opens the result at gemus.ai.",
   "author": {
     "name": "Gemus",
