@@ -1,6 +1,6 @@
 {
   "name": "gemus",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Build node-based AI design workflows on the Gemus canvas from your own Codex. Describe a workflow in plain language and Gemus creates the nodes, generates images/video/3D/PPT, and opens the result at gemus.ai.",
   "author": {
     "name": "Gemus",
@@ -25,6 +25,9 @@
       "Use Gemus to build a workflow for a coffee brand identity.",
       "Ask Gemus to generate a hero image and open the canvas."
     ],
-    "brandColor": "#10A37F"
+    "brandColor": "#10A37F",
+    "composerIcon": ".codex-plugin/assets/composerIcon.svg",
+    "logo": ".codex-plugin/assets/logo.png",
+    "logoDark": ".codex-plugin/assets/logo.png"
   }
 }
