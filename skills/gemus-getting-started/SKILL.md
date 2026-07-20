@@ -25,7 +25,8 @@ When the user wants Codex to design and fill a presentation directly on the Gemu
 2. Call `ppt_edit` with `action: "list_skeletons"` before outlining or writing slides. Filter by `kind` when useful and use only a returned `skeletonId`; never guess one. Read the selected style resource, such as `skill://corporate`, for visual guidance.
 3. Call `ppt_edit` with `action: "init_deck"` once. Keep the returned revision, starting at `0` for a new deck.
 4. Call `write_slide_html` once per slide and pass the revision returned by the previous write. Omit `slideId` to create a new slide. Pass `slideId` to update an existing slide.
-5. For edits, call `canvas_read(nodeId)` to get `deckSummary`, then `canvas_read(nodeId, slideId)` to read the target HTML before writing the update.
+5. Read the optional `critique` returned by each persisted `write_slide_html` or `patch_slide`. If `critique.pass` is false and `critique.correctionAllowed` is true, apply exactly one corrective round: prefer `patch_slide` for local text/image/class/style changes and use `write_slide_html` only for structural rewrites. The correction is re-evaluated automatically. If `correctionAllowed` is false, `critique` is absent, or it passes, continue; never poll or retry the evaluator.
+6. For later edits, call `canvas_read(nodeId)` to get `deckSummary`, then `canvas_read(nodeId, slideId)` to read the target HTML before patching or rewriting it.
 
 Do not call a retired structured slide-rendering action. Direct `ppt_edit` mutations do not use the `execute` dry-run/credit flow; only run the `gen-ppt` node when the user explicitly asks for its model-driven generation pipeline.
 
