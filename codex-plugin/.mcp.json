@@ -1,0 +1,10 @@
+{
+  "gemus": {
+    "command": "npx",
+    "args": ["-y", "@gemus/mcp-proxy@0.1.8"],
+    "env_vars": ["GEMUS_KEY", "GEMUS_URL"],
+    "startup_timeout_sec": 60,
+    "tool_timeout_sec": 300,
+    "enabled": false
+  }
+}

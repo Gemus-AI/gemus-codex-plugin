@@ -2,36 +2,77 @@
 
 Gives **Codex desktop (direct-connect / Mode B)** users automatic canvas backfill: images Codex
 generates with its built-in imagegen land on the planned `codex-imagen` nodes of a [Gemus](https://gemus.ai)
-canvas, instead of only orphaning as `image-upload`. The plugin is **hooks + skills only** — the MCP
-server + upstream auth live in the companion proxy (`@gemus/mcp-proxy`), registered locally with the
-user's own `mak_` key.
+canvas, instead of only orphaning as `image-upload`. The plugin ships a **default-disabled**
+plugin-scoped Companion MCP server, the Stop hook, and both Gemus skills. The plugin owns the
+non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Layout
 
 | File | Purpose |
 |------|---------|
 | `plugin.json` | Codex plugin manifest (metadata + `interface` + root `skills` pointer) |
+| `../codex-plugin/.mcp.json` | Secret-free, default-disabled Companion process contract |
 | `hooks/hooks.json` | Declares the `Stop` hook (command → `stop-backfill.mjs`) |
 | `hooks/stop-backfill.mjs` | Turn-end relay: reads the Stop payload, POSTs `transcript_path`+`turn_id` to the local proxy over loopback so it backfills |
 | `../skills/gemus-getting-started/SKILL.md` | Multi-node planning, prompt wiring, execution, and canvas-opening workflow |
 | `../skills/gemus-codex-imagen/SKILL.md` | Local image generation and automatic backfill protocol |
 
-There is **no `.mcp.json`**: the companion is registered by the user locally (see below), because a
-public manifest can't carry a per-user key and Codex does not interpolate `${VAR}` in an MCP `env`
-(both verified on codex-cli 0.142.2, #1751 Step-0.4).
+## Companion setup and migration
 
-## Install / onboarding
+The bundled contract uses exact `@gemus/mcp-proxy@0.1.8`,
+`startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY` and optional
+`GEMUS_URL` from the user environment; neither value is stored in this public plugin.
 
-```bash
-# 1. Register the companion as Codex's gemus MCP server (your own key, kept as a literal in local config):
-codex mcp add gemus --env GEMUS_KEY=mak_<your key> -- npx -y @gemus/mcp-proxy
-#    (mak_ key: gemus.ai → Settings → MCP Keys. GEMUS_URL defaults to https://gemus.ai/api/mcp.)
+Environment ownership and lifetime:
 
-# 2. Install this plugin, then TRUST its Stop hook (required for backfill to the planned node):
-codex plugin marketplace add Gemus-AI/gemus-codex-plugin
-codex plugin add gemus@gemus
-#    In interactive Codex run `/hooks` and trust the gemus Stop hook. Untrusted → images still land on
-#    the canvas as an orphan node (proxy idle-timer salvage), just not on the planned node.
+- **Windows / PowerShell:** the setup flow persists `GEMUS_KEY` in the Windows user environment and
+  also refreshes the current process.
+- **macOS:** If changing login context, sign out and back in first; rerun the `launchctl setenv`
+  setup in the new login session; then fully quit and restart Codex and open a new task.
+- **Linux:** the supported flow exports `GEMUS_KEY` for Codex launched from the same terminal. It
+  does not claim universal GNOME/KDE desktop-session inheritance.
+
+Companion and direct modes are mutually exclusive. Use this new-user or migration flow:
+
+1. Set `GEMUS_KEY` in the user environment (and optional `GEMUS_URL` for development).
+2. Remove a legacy global server if present. This command is safe/idempotent if none exists:
+
+   ```bash
+   codex mcp remove gemus
+   ```
+
+3. Install the marketplace and plugin:
+
+   ```bash
+   codex plugin marketplace add Gemus-AI/gemus-codex-plugin
+   codex plugin add gemus@gemus
+   ```
+
+   Existing users refresh the marketplace snapshot, then replace the installed plugin cache:
+
+   ```bash
+   codex plugin marketplace upgrade gemus
+   codex plugin remove gemus@gemus
+   codex plugin add gemus@gemus
+   ```
+
+4. Explicitly enable the default-disabled plugin-scoped Companion:
+
+   ```toml
+   [plugins."gemus@gemus".mcp_servers.gemus]
+   enabled = true
+   ```
+
+5. Restart Codex and open a new task.
+6. In that task, run `/hooks` and trust the Gemus Stop hook separately. Without trust, idle salvage
+   can still orphan the image, but deterministic planned-node backfill is unavailable.
+
+Intentional direct HTTP/OAuth users leave the plugin Companion disabled, keeping the global direct
+server as the only active `gemus` connection:
+
+```toml
+[plugins."gemus@gemus".mcp_servers.gemus]
+enabled = false
 ```
 
 ## Distribution (automated — Issue #2094)
@@ -39,11 +80,13 @@ codex plugin add gemus@gemus
 The Gemus monorepo is **private + large**, so it can't be the public marketplace source. The plugin
 ships from a **separate lightweight public repo** (`Gemus-AI/gemus-codex-plugin`) whose contents are
 generated from this monorepo (SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/`
-(`.codex-plugin/` + `skills/` + `.agents/plugins/marketplace.json`, the real-machine-validated layout).
+(`.codex-plugin/` + `codex-plugin/` + `skills/` + `.agents/plugins/marketplace.json`, the
+real-machine-validated layout).
 
 **Sync is automatic**: `.github/workflows/publish-codex-plugin.yml` fires on every master push touching
-`.codex-plugin/**`, `skills/**`, or the pack script, re-packs, and `rsync --delete`s the tree onto the
-mirror. The mirror is a **pure derived artifact** — never push to it by hand once the workflow is live
+`.codex-plugin/**`, `codex-plugin/**`, `skills/**`, or the pack script, re-packs, and
+`rsync --delete`s the tree onto the mirror. The mirror is a **pure derived artifact** — never push to
+it by hand once the workflow is live
 (a manual push racing the automated one gets rejected non-fast-forward), and any file not produced by
 the pack script is deleted on the next sync. A version bump in `plugin.json` is enforced by the
 `check:codex-plugin-version` CI gate, so users always get an upgrade signal. `codex plugin marketplace
