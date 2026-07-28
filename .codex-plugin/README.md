@@ -19,9 +19,10 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Companion setup and migration
 
-The bundled contract uses exact `@gemus/mcp-proxy@0.1.8`,
-`startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY` and optional
-`GEMUS_URL` from the user environment; neither value is stored in this public plugin.
+The bundled contract uses exact `@gemus/mcp-proxy@0.1.9`,
+`startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY`, optional
+`GEMUS_URL`, and optional `PROXY_CONNECT_ATTEMPT_TIMEOUT_MS` from the user environment; their
+values are not stored in this public plugin.
 
 Environment ownership and lifetime:
 
