@@ -1,6 +1,6 @@
 {
   "name": "gemus",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Build node-based AI design workflows on the Gemus canvas from your own Codex. Describe a workflow in plain language and Gemus creates the nodes, generates images/video/3D/PPT, and opens the result at gemus.ai.",
   "author": {
     "name": "Gemus",
@@ -15,7 +15,7 @@
   "interface": {
     "displayName": "Gemus",
     "shortDescription": "AI design workflows on the Gemus canvas",
-    "longDescription": "Gemus is a visual AI design workflow platform. This plugin adds a default-disabled Companion MCP server plus a Stop hook and skills so your local Codex can build workflows, run AI generation, and automatically backfill Codex's own image generations onto planned canvas nodes. Set GEMUS_KEY in your user environment, explicitly enable the plugin-scoped Companion when you are ready, then trust the Stop hook with /hooks. View results at gemus.ai.",
+    "longDescription": "Gemus is a visual AI design workflow platform. This plugin adds a default-disabled Companion MCP server plus a Stop hook and skills so your local Codex can build workflows, run AI generation, and automatically backfill Codex's own image generations onto planned canvas nodes. On Windows or macOS, run the safe-to-rerun one-command setup, restart Codex, then trust the Stop hook with /hooks. Self-hosted and Linux users can use the documented manual fallback. View results at gemus.ai.",
     "developerName": "Gemus",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],

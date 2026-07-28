@@ -19,23 +19,38 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Companion setup and migration
 
-The bundled contract uses exact `@gemus/mcp-proxy@0.1.9`,
+The bundled contract uses exact `@gemus/mcp-proxy@0.1.10`,
 `startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY`, optional
 `GEMUS_URL`, and optional `PROXY_CONNECT_ATTEMPT_TIMEOUT_MS` from the user environment; their
 values are not stored in this public plugin.
 
+For the production Gemus service, the recommended Windows/macOS setup is one command that is safe to rerun:
+
+```bash
+npx -y @gemus/mcp-proxy@0.1.10 setup
+```
+
+It securely prompts for the key, reconciles the marketplace/plugin, removes legacy Gemus config,
+enables the Companion, and preserves a backup when it changes `config.toml`. Fully quit and restart
+Codex when it finishes, then open a new task and run `/hooks` to trust the Gemus Stop hook.
+
+The public setup command, shell history, and setup diagnostics remain key-free. On macOS, the
+short-lived `launchctl setenv` child necessarily receives the key in its argv.
+
 Environment ownership and lifetime:
 
-- **Windows / PowerShell:** the setup flow persists `GEMUS_KEY` in the Windows user environment and
-  also refreshes the current process.
+- **Windows / PowerShell:** the setup flow persists `GEMUS_KEY` in the Windows user environment
+  scope. Fully quit and restart Codex so it receives the updated environment.
 - **macOS:** If changing login context, sign out and back in first; rerun the `launchctl setenv`
-  setup in the new login session; then fully quit and restart Codex and open a new task.
+  setup in the new login session; the value lasts for the current login session only. Then fully quit
+  and restart Codex and open a new task.
 - **Linux:** the supported flow exports `GEMUS_KEY` for Codex launched from the same terminal. It
   does not claim universal GNOME/KDE desktop-session inheritance.
 
-Companion and direct modes are mutually exclusive. Use this new-user or migration flow:
+Companion and direct modes are mutually exclusive. Use this advanced manual fallback for Linux,
+self-hosted `GEMUS_URL`, or troubleshooting when the production one-command setup is not applicable:
 
-1. Set `GEMUS_KEY` in the user environment (and optional `GEMUS_URL` for development).
+1. Set `GEMUS_KEY` in the user environment (and optional `GEMUS_URL` for self-hosted/development).
 2. Remove a legacy global server if present. This command is safe/idempotent if none exists:
 
    ```bash
@@ -64,8 +79,8 @@ Companion and direct modes are mutually exclusive. Use this new-user or migratio
    enabled = true
    ```
 
-5. Restart Codex and open a new task.
-6. In that task, run `/hooks` and trust the Gemus Stop hook separately. Without trust, idle salvage
+5. Fully quit and restart Codex, open a new task, then trust the Gemus Stop hook with `/hooks`.
+   Without trust, idle salvage
    can still orphan the image, but deterministic planned-node backfill is unavailable.
 
 Intentional direct HTTP/OAuth users leave the plugin Companion disabled, keeping the global direct
