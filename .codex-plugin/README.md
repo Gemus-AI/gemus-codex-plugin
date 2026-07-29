@@ -96,11 +96,12 @@ enabled = false
 The Gemus monorepo is **private + large**, so it can't be the public marketplace source. The plugin
 ships from a **separate lightweight public repo** (`Gemus-AI/gemus-codex-plugin`) whose contents are
 generated from this monorepo (SSOT) by `scripts/pack-codex-plugin.mjs` → `dist-codex-plugin/`
-(`.codex-plugin/` + `codex-plugin/` + `skills/` + `.agents/plugins/marketplace.json`, the
+(`.codex-plugin/` + `assets/` + `codex-plugin/` + `skills/` +
+`.agents/plugins/marketplace.json`, the
 real-machine-validated layout).
 
 **Sync is automatic**: `.github/workflows/publish-codex-plugin.yml` fires on every master push touching
-`.codex-plugin/**`, `codex-plugin/**`, `skills/**`, or the pack script, re-packs, and
+`.codex-plugin/**`, `assets/**`, `codex-plugin/**`, `skills/**`, or the pack script, re-packs, and
 `rsync --delete`s the tree onto the mirror. The mirror is a **pure derived artifact** — never push to
 it by hand once the workflow is live
 (a manual push racing the automated one gets rejected non-fast-forward), and any file not produced by
@@ -131,6 +132,6 @@ version-drift gate can't be bypassed by a direct push.
 2. ~~Create the public plugin repo and push the packed output~~ — done; sync is now automated by
    `publish-codex-plugin.yml` (Issue #2094). Remaining one-time admin step: add the
    `CODEX_PLUGIN_PUSH_TOKEN` secret (see "Distribution" above).
-3. **Assets/legal**: keep `composerIcon` / `logo` paths manifest-relative (`./assets/...`), add
-   marketplace screenshots, and confirm `gemus.ai/terms` & `/privacy` before any
-   official-marketplace submission.
+3. **Assets/legal**: keep `composerIcon` / `logo` paths plugin-root-relative (`./assets/...`) and
+   keep the files in the root `assets/` directory, add marketplace screenshots, and confirm
+   `gemus.ai/terms` & `/privacy` before any official-marketplace submission.

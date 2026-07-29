@@ -46,4 +46,4 @@ enabled = true
 After enabling, fully quit and restart Codex, open a new task, then trust the Stop hook with `/hooks`.
 
 Get a `mak_` key at gemus.ai → Settings → MCP Keys. Generated from the Gemus monorepo
-(`scripts/pack-codex-plugin.mjs`) — do not edit here; edit `.codex-plugin/`, `codex-plugin/`, or `skills/` upstream.
+(`scripts/pack-codex-plugin.mjs`) — do not edit here; edit `.codex-plugin/`, `assets/`, `codex-plugin/`, or `skills/` upstream.
