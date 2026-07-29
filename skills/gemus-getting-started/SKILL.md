@@ -7,6 +7,14 @@ description: Use when building, editing, running, or opening an AI design workfl
 
 Use the installed MCP tools to operate the user's live Gemus canvas. Tool loading is deferred: when a required tool is absent, call `tool_search` with its exact name before concluding it is unavailable.
 
+## Delivery Surface
+
+When the requested deliverable is a Gemus workflow, keep planning and implementation on the Gemus MCP surface. MCP mutations are the implementation: use `project_plan` for durable decisions, `blueprint` for multi-node phases, `canvas_edit` for focused changes, `execute` for generation, and `publish_workflow` for a confirmed direct publish.
+
+Do not create local implementation plans, specs, apps, or documents as substitutes for those canvas operations. Local filesystem work is limited to reading user-provided files or preparing assets for upload unless the user explicitly asks for a local code or document deliverable.
+
+Browser control after `open_canvas` is for opening the returned one-time URL and visual inspection only. It does not replace MCP reads, mutations, execution, or publishing.
+
 ## Workflow Contract
 
 1. For a workflow with three or more connected nodes, search for and call `blueprint`; do not hand-build it with `canvas_edit`. Use the editor only for focused changes. When creating a new workflow, always set `blueprint`'s `name` to what the user ultimately wants to design — the final deliverable (e.g. "Coffee brand identity", "Product hero video"). Never leave it unset or use a generic/technical name like "MCP …", "Workflow", or a node label.

@@ -131,5 +131,6 @@ version-drift gate can't be bypassed by a direct push.
 2. ~~Create the public plugin repo and push the packed output~~ — done; sync is now automated by
    `publish-codex-plugin.yml` (Issue #2094). Remaining one-time admin step: add the
    `CODEX_PLUGIN_PUSH_TOKEN` secret (see "Distribution" above).
-3. **Assets/legal**: add `composerIcon` / `logo` / `screenshots` to `interface` and confirm
-   `gemus.ai/terms` & `/privacy` before any official-marketplace submission.
+3. **Assets/legal**: keep `composerIcon` / `logo` paths manifest-relative (`./assets/...`), add
+   marketplace screenshots, and confirm `gemus.ai/terms` & `/privacy` before any
+   official-marketplace submission.
