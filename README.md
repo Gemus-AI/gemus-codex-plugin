@@ -7,22 +7,33 @@ its own image generations onto planned nodes of a [Gemus](https://gemus.ai) canv
 
 ```bash
 # Production Gemus on Windows or macOS — safe to rerun:
-npx -y @gemus/mcp-proxy@0.1.10 setup
+npx -y @gemus/mcp-proxy@0.1.11 setup
 ```
 
 The setup securely prompts for your key, reconciles the plugin, migrates legacy Gemus config,
 and enables the default-disabled Companion. On Windows it writes the user environment; on macOS
 the environment lasts for the current login session. Fully quit and restart Codex, then open a new
 task and trust the Stop hook with `/hooks`.
+The full setup reports the exact PATH-resolved Codex executable, validated CLI version, and config
+home so machines with multiple Codex installations show which target was changed.
 
 The public setup command, shell history, and setup diagnostics remain key-free. On macOS, the
 short-lived `launchctl setenv` child necessarily receives the key in its argv.
 
-## Advanced manual fallback
+## Advanced environment setup
 
-For Linux, self-hosted `GEMUS_URL`, or troubleshooting, set `GEMUS_KEY` in the user environment
-(and optional `GEMUS_URL` for self-hosted/development). This manual fallback is safe to rerun
-after correcting the environment:
+For Linux, self-hosted `GEMUS_URL`, or troubleshooting, use the same key-free single-line command
+on every supported terminal. It securely prompts for `GEMUS_KEY`; optional `GEMUS_URL` for self-hosted/development
+is passed with `--url`. This environment-only setup is safe to rerun:
+
+```bash
+npx -y @gemus/mcp-proxy@0.1.11 setup-env
+# Self-hosted/development:
+npx -y @gemus/mcp-proxy@0.1.11 setup-env --url "https://your-gemus.example/api/mcp"
+```
+
+On Windows it updates the user environment; on macOS it updates the current login session; on Linux
+it launches Codex from the same terminal with the acquired environment.
 
 ```bash
 codex mcp remove gemus

@@ -19,7 +19,7 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Companion setup and migration
 
-The bundled contract uses exact `@gemus/mcp-proxy@0.1.10`,
+The bundled contract uses exact `@gemus/mcp-proxy@0.1.11`,
 `startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY`, optional
 `GEMUS_URL`, and optional `PROXY_CONNECT_ATTEMPT_TIMEOUT_MS` from the user environment; their
 values are not stored in this public plugin.
@@ -27,12 +27,14 @@ values are not stored in this public plugin.
 For the production Gemus service, the recommended Windows/macOS setup is one command that is safe to rerun:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.10 setup
+npx -y @gemus/mcp-proxy@0.1.11 setup
 ```
 
 It securely prompts for the key, reconciles the marketplace/plugin, removes legacy Gemus config,
 enables the Companion, and preserves a backup when it changes `config.toml`. Fully quit and restart
 Codex when it finishes, then open a new task and run `/hooks` to trust the Gemus Stop hook.
+Before reconciliation it reports the exact PATH-resolved Codex executable, validated CLI version,
+and Codex config home, so machines with multiple Codex installations show which target was changed.
 
 The public setup command, shell history, and setup diagnostics remain key-free. On macOS, the
 short-lived `launchctl setenv` child necessarily receives the key in its argv.
@@ -47,10 +49,23 @@ Environment ownership and lifetime:
 - **Linux:** the supported flow exports `GEMUS_KEY` for Codex launched from the same terminal. It
   does not claim universal GNOME/KDE desktop-session inheritance.
 
-Companion and direct modes are mutually exclusive. Use this advanced manual fallback for Linux,
-self-hosted `GEMUS_URL`, or troubleshooting when the production one-command setup is not applicable:
+Companion and direct modes are mutually exclusive. For Linux, self-hosted `GEMUS_URL`, or
+troubleshooting, use the same key-free, one-line environment command in the platform's normal
+terminal:
 
-1. Set `GEMUS_KEY` in the user environment (and optional `GEMUS_URL` for self-hosted/development).
+```bash
+npx -y @gemus/mcp-proxy@0.1.11 setup-env
+# Self-hosted/development:
+npx -y @gemus/mcp-proxy@0.1.11 setup-env --url "https://your-gemus.example/api/mcp"
+```
+
+It securely prompts for `GEMUS_KEY`; optional `GEMUS_URL` for self-hosted/development is supplied
+with `--url`. On Windows it updates the user environment, on macOS the current login session, and
+on Linux it launches Codex from the same terminal with that environment.
+
+Then complete the plugin migration:
+
+1. Run the environment-only setup above.
 2. Remove a legacy global server if present. This command is safe/idempotent if none exists:
 
    ```bash
