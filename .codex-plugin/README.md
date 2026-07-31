@@ -19,7 +19,7 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Companion setup and migration
 
-The bundled contract uses exact `@gemus/mcp-proxy@0.1.12`,
+The bundled contract uses exact `@gemus/mcp-proxy@0.1.13`,
 `startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY`, optional
 `GEMUS_URL`, and optional `PROXY_CONNECT_ATTEMPT_TIMEOUT_MS` from the user environment; their
 values are not stored in this public plugin.
@@ -27,7 +27,7 @@ values are not stored in this public plugin.
 For the production Gemus service, the recommended Windows/macOS setup is one command that is safe to rerun:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.12 setup
+npx -y @gemus/mcp-proxy@0.1.13 setup
 ```
 
 It securely prompts for the key, reconciles the marketplace/plugin, removes legacy Gemus config,
@@ -54,9 +54,9 @@ troubleshooting, use the same key-free, one-line environment command in the plat
 terminal:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.12 setup-env
+npx -y @gemus/mcp-proxy@0.1.13 setup-env
 # Self-hosted/development:
-npx -y @gemus/mcp-proxy@0.1.12 setup-env --url "https://your-gemus.example/api/mcp"
+npx -y @gemus/mcp-proxy@0.1.13 setup-env --url "https://your-gemus.example/api/mcp"
 ```
 
 It securely prompts for `GEMUS_KEY`; optional `GEMUS_URL` for self-hosted/development is supplied

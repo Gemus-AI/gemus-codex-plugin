@@ -1,7 +1,7 @@
 {
   "gemus": {
     "command": "npx",
-    "args": ["-y", "@gemus/mcp-proxy@0.1.12"],
+    "args": ["-y", "@gemus/mcp-proxy@0.1.13"],
     "env_vars": ["GEMUS_KEY", "GEMUS_URL", "PROXY_CONNECT_ATTEMPT_TIMEOUT_MS"],
     "startup_timeout_sec": 60,
     "tool_timeout_sec": 300,
