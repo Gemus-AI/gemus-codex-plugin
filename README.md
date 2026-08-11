@@ -7,13 +7,13 @@ its own image generations onto planned nodes of a [Gemus](https://gemus.ai) canv
 
 ```bash
 # Production Gemus on Windows or macOS — safe to rerun:
-npx -y @gemus/mcp-proxy@0.1.13 setup
+npx -y @gemus/mcp-proxy@0.1.14 setup
 ```
 
 The setup securely prompts for your key, reconciles the plugin, migrates legacy Gemus config,
 and enables the default-disabled Companion. On Windows it writes the user environment; on macOS
 the environment lasts for the current login session. Fully quit and restart Codex, then open a new
-task and trust the Stop hook with `/hooks`.
+task. The setup reconciliation enables the plugin-owned integration.
 The full setup reports the exact PATH-resolved Codex executable, validated CLI version, and config
 home so machines with multiple Codex installations show which target was changed.
 
@@ -27,9 +27,9 @@ on every supported terminal. It securely prompts for `GEMUS_KEY`; optional `GEMU
 is passed with `--url`. This environment-only setup is safe to rerun:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.13 setup-env
+npx -y @gemus/mcp-proxy@0.1.14 setup-env
 # Self-hosted/development:
-npx -y @gemus/mcp-proxy@0.1.13 setup-env --url "https://your-gemus.example/api/mcp"
+npx -y @gemus/mcp-proxy@0.1.14 setup-env --url "https://your-gemus.example/api/mcp"
 ```
 
 On Windows it updates the user environment; on macOS it updates the current login session; on Linux
