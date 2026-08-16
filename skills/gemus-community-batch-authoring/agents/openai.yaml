@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gemus Community Batch Authoring"
+  short_description: "Create varied Gemus community workflows in batches"
+  default_prompt: "Use $gemus-community-batch-authoring to turn these seed briefs into a varied, resumable Gemus community workflow batch."

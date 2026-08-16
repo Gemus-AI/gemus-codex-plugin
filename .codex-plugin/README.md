@@ -3,7 +3,7 @@
 Gives **Codex desktop (direct-connect / Mode B)** users automatic canvas backfill: images Codex
 generates with its built-in imagegen land on the planned `codex-imagen` nodes of a [Gemus](https://gemus.ai)
 canvas, instead of only orphaning as `image-upload`. The plugin ships a **default-disabled**
-plugin-scoped Companion MCP server, the Stop hook, and both Gemus skills. The plugin owns the
+plugin-scoped Companion MCP server, the Stop hook, and three Gemus skills. The plugin owns the
 non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Layout
@@ -16,6 +16,7 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 | `hooks/stop-backfill.mjs` | Turn-end relay: reads the Stop payload, POSTs `transcript_path`+`turn_id` to the local proxy over loopback so it backfills |
 | `../skills/gemus-getting-started/SKILL.md` | Multi-node planning, prompt wiring, execution, and canvas-opening workflow |
 | `../skills/gemus-codex-imagen/SKILL.md` | Local image generation and automatic backfill protocol |
+| `../skills/gemus-community-batch-authoring/SKILL.md` | Curator-only batch expansion, topology diversity checks, resumability, and controlled community publishing |
 
 ## Companion setup and migration
 
