@@ -7,7 +7,7 @@ its own image generations onto planned nodes of a [Gemus](https://gemus.ai) canv
 
 ```bash
 # Production Gemus on Windows or macOS — safe to rerun:
-npx -y @gemus/mcp-proxy@0.1.17 setup
+npx -y @gemus/mcp-proxy@0.1.18 setup
 ```
 
 The setup securely prompts for your key, reconciles the plugin, migrates legacy Gemus config,
@@ -27,9 +27,9 @@ on every supported terminal. It securely prompts for `GEMUS_KEY`; optional `GEMU
 is passed with `--url`. This environment-only setup is safe to rerun:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.17 setup-env
+npx -y @gemus/mcp-proxy@0.1.18 setup-env
 # Self-hosted/development:
-npx -y @gemus/mcp-proxy@0.1.17 setup-env --url "https://your-gemus.example/api/mcp"
+npx -y @gemus/mcp-proxy@0.1.18 setup-env --url "https://your-gemus.example/api/mcp"
 ```
 
 On Windows it updates the user environment; on macOS it updates the current login session; on Linux
