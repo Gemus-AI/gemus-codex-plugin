@@ -5,6 +5,12 @@ import path from "node:path";
 
 const SCHEMA_VERSION = 1;
 const DEFAULT_THRESHOLD = 0.78;
+const CHECKPOINT_STATUSES = new Set([
+  "planned",
+  "built",
+  "generated",
+  "delivery",
+]);
 
 function print(value, stream = process.stdout) {
   stream.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -217,6 +223,30 @@ function createReport(ledger) {
   collisions.sort((a, b) => b.score - a.score || a.left.localeCompare(b.left));
   return {
     total: ledger.entries.length,
+    statuses: count(
+      ledger.entries.map((entry) =>
+        nonEmptyString(entry.status) ? entry.status.toLowerCase() : "completed",
+      ),
+    ),
+    resumable: ledger.entries
+      .filter(
+        (entry) =>
+          entry.status !== "completed" &&
+          nonEmptyString(entry.resume?.phase) &&
+          nonEmptyString(entry.resume?.nextAction),
+      )
+      .map((entry) => ({
+        id: entry.id,
+        workflowId: entry.workflowId,
+        phase: entry.resume.phase,
+        nextAction: entry.resume.nextAction,
+        ...(entry.resume.keyNodeIds
+          ? { keyNodeIds: entry.resume.keyNodeIds }
+          : {}),
+        ...(entry.resume.pptRevision !== undefined
+          ? { pptRevision: entry.resume.pptRevision }
+          : {}),
+      })),
     archetypes: sortedCounts(ledger.entries, "archetype"),
     deliverables: sortedCounts(ledger.entries, "deliverables"),
     closestCollisions: collisions.slice(0, 10),
@@ -228,6 +258,7 @@ function usage() {
     usage: [
       "batch-ledger.mjs init <ledger> [--source <path>]",
       "batch-ledger.mjs check <ledger> <candidate> [--threshold 0.78]",
+      "batch-ledger.mjs checkpoint <ledger> <candidate>",
       "batch-ledger.mjs record <ledger> <candidate> [--threshold 0.78] [--allow-similar]",
       "batch-ledger.mjs report <ledger>",
     ],
@@ -272,8 +303,67 @@ function main(args) {
   if (!candidatePath)
     throw new Error(`Command "${command}" requires a candidate JSON path`);
   const candidate = readJson(candidatePath);
+
+  if (command === "checkpoint") {
+    validateCandidate(candidate);
+    if (!CHECKPOINT_STATUSES.has(candidate.status)) {
+      throw new Error(
+        `Checkpoint status must be one of: ${[...CHECKPOINT_STATUSES].join(", ")}`,
+      );
+    }
+    if (
+      !nonEmptyString(candidate.resume?.phase) ||
+      !nonEmptyString(candidate.resume?.nextAction)
+    ) {
+      throw new Error(
+        'Checkpoint requires resume fields "phase" and "nextAction"',
+      );
+    }
+    if (
+      nonEmptyString(candidate.workflowId) &&
+      ledger.entries.some(
+        (entry) =>
+          entry.id !== candidate.id &&
+          entry.workflowId === candidate.workflowId,
+      )
+    ) {
+      throw new Error(
+        `Ledger already contains workflowId "${candidate.workflowId}"`,
+      );
+    }
+    const existingIndex = ledger.entries.findIndex(
+      (entry) => entry.id === candidate.id,
+    );
+    if (
+      existingIndex >= 0 &&
+      (ledger.entries[existingIndex].status ?? "completed") === "completed"
+    ) {
+      throw new Error(
+        `Cannot replace completed candidate id "${candidate.id}" with a checkpoint`,
+      );
+    }
+    const checkpoint = {
+      ...candidate,
+      signature: signature(candidate),
+      checkpointedAt: new Date().toISOString(),
+    };
+    if (existingIndex >= 0) ledger.entries[existingIndex] = checkpoint;
+    else ledger.entries.push(checkpoint);
+    atomicWrite(ledgerPath, ledger);
+    print({
+      status: "checkpointed",
+      id: candidate.id,
+      stage: candidate.status,
+    });
+    return;
+  }
+
   const threshold = thresholdFrom(args, ledger);
-  const result = inspect(ledger, candidate, threshold);
+  const comparisonLedger = {
+    ...ledger,
+    entries: ledger.entries.filter((entry) => entry.id !== candidate.id),
+  };
+  const result = inspect(comparisonLedger, candidate, threshold);
 
   if (command === "check") {
     print(result);
@@ -281,12 +371,22 @@ function main(args) {
     return;
   }
   if (command === "record") {
-    if (ledger.entries.some((entry) => entry.id === candidate.id)) {
+    const existingIndex = ledger.entries.findIndex(
+      (entry) => entry.id === candidate.id,
+    );
+    if (
+      existingIndex >= 0 &&
+      (ledger.entries[existingIndex].status ?? "completed") === "completed"
+    ) {
       throw new Error(`Ledger already contains candidate id "${candidate.id}"`);
     }
     if (
       nonEmptyString(candidate.workflowId) &&
-      ledger.entries.some((entry) => entry.workflowId === candidate.workflowId)
+      ledger.entries.some(
+        (entry) =>
+          entry.id !== candidate.id &&
+          entry.workflowId === candidate.workflowId,
+      )
     ) {
       throw new Error(
         `Ledger already contains workflowId "${candidate.workflowId}"`,
@@ -302,11 +402,16 @@ function main(args) {
         return;
       }
     }
-    ledger.entries.push({
-      ...candidate,
+    const { resume: _resume, status: _status, ...completedCandidate } =
+      candidate;
+    const completedEntry = {
+      ...completedCandidate,
+      status: "completed",
       signature: result.signature,
       recordedAt: new Date().toISOString(),
-    });
+    };
+    if (existingIndex >= 0) ledger.entries[existingIndex] = completedEntry;
+    else ledger.entries.push(completedEntry);
     atomicWrite(ledgerPath, ledger);
     print({ status: "recorded", id: candidate.id, closest: result.closest });
     return;

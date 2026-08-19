@@ -2,6 +2,8 @@
 
 Choose the archetype from the seed's dominant uncertainty and current portfolio coverage. Archetypes are reasoning shapes, not fixed node templates; vary node types, depth, branches, and deliverables inside each one.
 
+A fixed PPT is a delivery contract, not an archetype. First decide how the case learns and makes decisions; then use the contract's narrative spine and evidence map to decide which results deserve pages.
+
 | Archetype           | Use when                                                           | Characteristic shape                                              | Avoid                                          |
 | ------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- | ---------------------------------------------- |
 | Evidence-first      | Core facts or references are uncertain                             | gather → compare → derive criteria → create                       | generic web research with no decision effect   |
@@ -31,3 +33,5 @@ A workflow is not materially different when only its title, domain nouns, model,
 - human role and interaction point;
 - temporal structure;
 - final artifact and validation method.
+
+Across a batch, also vary the narrative spine, evidence types, visual grammar, and final decision object. Two graphs can be topologically different yet still feel homogeneous when they tell the same story with the same hero/angle/detail page sequence.
