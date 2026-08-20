@@ -11,6 +11,21 @@ const CHECKPOINT_STATUSES = new Set([
   "generated",
   "delivery",
 ]);
+const PPT_AUTHORING_MODES = new Set(["direct", "model"]);
+const PPT_QUALITY_STATUSES = new Set(["passed", "failed", "needs-review"]);
+/**
+ * PPT resume state. A resumed session cannot rediscover it from the canvas, so it
+ * travels with the checkpoint — and `report` echoes it, because state nobody reads
+ * back is state that was never written.
+ */
+const PPT_RESUME_FIELDS = [
+  "pptNodeId",
+  "pptAuthoringMode",
+  "pptRevision",
+  "pptPlanValidated",
+  "pptSlideBindings",
+  "pptQualityStatus",
+];
 
 function print(value, stream = process.stdout) {
   stream.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -50,6 +65,40 @@ function normalizeList(value) {
       value.filter(nonEmptyString).map((item) => item.trim().toLowerCase()),
     ),
   ].sort();
+}
+
+function pptResumeState(resume) {
+  const state = {};
+  for (const field of PPT_RESUME_FIELDS) {
+    if (resume?.[field] !== undefined) state[field] = resume[field];
+  }
+  return state;
+}
+
+function validatePptResume(resume) {
+  const state = pptResumeState(resume);
+  if (Object.keys(state).length === 0) return;
+  if (!nonEmptyString(state.pptNodeId)) {
+    throw new Error(
+      'Checkpoint PPT state requires "pptNodeId" — the workflow\'s single gen-ppt node',
+    );
+  }
+  if (
+    state.pptAuthoringMode !== undefined &&
+    !PPT_AUTHORING_MODES.has(state.pptAuthoringMode)
+  ) {
+    throw new Error(
+      `Checkpoint "pptAuthoringMode" must be one of: ${[...PPT_AUTHORING_MODES].join(", ")}`,
+    );
+  }
+  if (
+    state.pptQualityStatus !== undefined &&
+    !PPT_QUALITY_STATUSES.has(state.pptQualityStatus)
+  ) {
+    throw new Error(
+      `Checkpoint "pptQualityStatus" must be one of: ${[...PPT_QUALITY_STATUSES].join(", ")}`,
+    );
+  }
 }
 
 function validateCandidate(candidate) {
@@ -243,9 +292,7 @@ function createReport(ledger) {
         ...(entry.resume.keyNodeIds
           ? { keyNodeIds: entry.resume.keyNodeIds }
           : {}),
-        ...(entry.resume.pptRevision !== undefined
-          ? { pptRevision: entry.resume.pptRevision }
-          : {}),
+        ...pptResumeState(entry.resume),
       })),
     archetypes: sortedCounts(ledger.entries, "archetype"),
     deliverables: sortedCounts(ledger.entries, "deliverables"),
@@ -319,6 +366,7 @@ function main(args) {
         'Checkpoint requires resume fields "phase" and "nextAction"',
       );
     }
+    validatePptResume(candidate.resume);
     if (
       nonEmptyString(candidate.workflowId) &&
       ledger.entries.some(

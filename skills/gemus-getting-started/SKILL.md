@@ -28,14 +28,40 @@ Use `node_list` for node/model discovery and `canvas_read` for current IDs, outp
 
 ## Presentation decks
 
+A workflow carries **at most one `gen-ppt` node**. It is the deck's identity: its node ID owns the revision, the plan and the slide bindings. Creating a second one abandons that state instead of repairing it.
+
+Pick one authoring mode per node and stay in it:
+
+| Mode | When | What runs | What is forbidden |
+| --- | --- | --- | --- |
+| Direct authoring | You are designing and filling the deck (the default when the user asks Codex to make the PPT) | `ppt_edit` init/plan/write/finalize | Never `execute` the `gen-ppt` node — it overwrites the deck output with model-generated content |
+| Model pipeline | The user explicitly asks for the node's own generation model to produce the deck | `execute` on the `gen-ppt` node | Do not also author the same node with `ppt_edit` in the same pass |
+
+Model constraints are scoped to what they name. "Use `gpt-image-2` for all image generation" applies to `gen-image-generation` nodes only; never propagate an image model onto `gen-ppt`, text, or analysis nodes. `blueprint` returns `warnings` when it auto-corrects an incompatible model — read them and tell the user what changed.
+
+When the canvas already holds real design imagery, plan an image-led deck: every page names its visual protagonist and each asset's evidence role. Support a technical claim with the technical artefact — a plan, section, exploded view or detail — because an aerial or hero render does not stand in for one. Caption each asset with what THAT asset shows, mark annotated assets and give them `contain`, and do not make one image the protagonist of several pages. `validate_plan` reports all of this deterministically before any slide exists; fix the plan there rather than meeting the same defects as critique findings afterwards.
+
 When the user wants Codex to design and fill a presentation directly on the Gemus canvas, use the MCP PPT editor instead of executing the `gen-ppt` node's configured generation model:
 
-1. Ensure a `gen-ppt` node exists, creating one with `canvas_edit` when needed. Search for `ppt_edit` with `tool_search` if it is not already loaded.
+1. Find the workflow's existing `gen-ppt` node with `canvas_read` and reuse it. Create one with `canvas_edit` **only when the canvas has none**; when one already exists you may not create a second. Search for `ppt_edit` with `tool_search` if it is not already loaded.
 2. Call `ppt_edit` with `action: "list_skeletons"` before outlining or writing slides. Filter by `kind` when useful and use only a returned `skeletonId`; never guess one. Read the selected style resource, such as `skill://corporate`, for visual guidance.
 3. Call `ppt_edit` with `action: "init_deck"` once. Keep the returned revision, starting at `0` for a new deck.
-4. Call `write_slide_html` once per slide and pass the revision returned by the previous write. Omit `slideId` to create a new slide. Pass `slideId` to update an existing slide.
-5. Read the optional `critique` returned by each persisted `write_slide_html` or `patch_slide`. If `critique.pass` is false and `critique.correctionAllowed` is true, apply exactly one corrective round: prefer `patch_slide` for local text/image/class/style changes and use `write_slide_html` only for structural rewrites. The correction is re-evaluated automatically. If `correctionAllowed` is false, `critique` is absent, or it passes, continue; never poll or retry the evaluator.
+4. Call `write_slide_html` once per slide and pass the revision returned by the previous write. Omit `slideId` to create a new slide. Pass `slideId` to update an existing slide. Call `get_layout_seed` for the row first and act on its `assetHints` — natural aspect ratio, image-box aspect ratio, predicted `object-fit:cover` crop, whether the asset is annotated, and the recommended fit. None of that is computable from the canvas or the seed alone.
+5. Read the optional `critique` returned by each persisted `write_slide_html` or `patch_slide`. If `critique.pass` is false and `critique.correctionAllowed` is true, apply exactly one corrective round, routed by `critique.repairClass`: `local-style` → `patch_slide`; `structural-layout` → rewrite the slide with `write_slide_html`; `asset-semantic` → rebind the right evidence (replan first when the plan is what is wrong) and rewrite; `invalid-source` → swap the unusable asset or drop it to a lesser role. The correction is re-evaluated automatically. If `correctionAllowed` is false, `critique` is absent, or it passes, continue; never poll or retry the evaluator.
 6. For later edits, call `canvas_read(nodeId)` to get `deckSummary`, then `canvas_read(nodeId, slideId)` to read the target HTML before patching or rewriting it.
+
+### Recovering the same node
+
+Every failure below is repaired **on the original nodeId**. Exhaust this table before even considering a new node; a second `gen-ppt` node is not a recovery step.
+
+| Symptom | Recovery |
+| --- | --- |
+| `code: 'PPT_REVISION_CONFLICT'` | Retry the same call with the returned `currentRevision` |
+| `code: 'PPT_DECK_MALFORMED'` | `init_deck` with `force: true` on that same node |
+| `init_deck` failed or the node holds model-generated, non-deck output | `canvas_read(nodeId)` for `deckSummary`, then `init_deck` with `force: true` on that same node |
+| Transport/HTTP error with unknown outcome | `canvas_read(nodeId)` to learn the persisted revision, then continue from it |
+
+Route a failed `critique` by `repairClass` — what is actually wrong — not by how cheap the fix looks. The corrective round happens once, so do not spend it on a patch that cannot reach the cause.
 
 Do not call a retired structured slide-rendering action. Direct `ppt_edit` mutations do not use the `execute` dry-run/credit flow; only run the `gen-ppt` node when the user explicitly asks for its model-driven generation pipeline.
 
