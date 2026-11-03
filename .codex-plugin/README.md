@@ -20,7 +20,7 @@ non-secret startup contract; the user's process environment owns `GEMUS_KEY`.
 
 ## Companion setup and migration
 
-The bundled contract uses exact `@gemus/mcp-proxy@0.1.18`,
+The bundled contract uses exact `@gemus/mcp-proxy@0.2.0`,
 `startup_timeout_sec = 60`, and `tool_timeout_sec = 300`. It forwards `GEMUS_KEY`, optional
 `GEMUS_URL`, and optional `PROXY_CONNECT_ATTEMPT_TIMEOUT_MS` from the user environment; their
 values are not stored in this public plugin.
@@ -28,7 +28,7 @@ values are not stored in this public plugin.
 For the production Gemus service, the recommended Windows/macOS setup is one command that is safe to rerun:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.18 setup
+npx -y @gemus/mcp-proxy@0.2.0 setup
 ```
 
 It securely prompts for the key, reconciles the marketplace/plugin, removes legacy Gemus config,
@@ -59,9 +59,9 @@ troubleshooting, use the same key-free, one-line environment command in the plat
 terminal:
 
 ```bash
-npx -y @gemus/mcp-proxy@0.1.18 setup-env
+npx -y @gemus/mcp-proxy@0.2.0 setup-env
 # Self-hosted/development:
-npx -y @gemus/mcp-proxy@0.1.18 setup-env --url "https://your-gemus.example/api/mcp"
+npx -y @gemus/mcp-proxy@0.2.0 setup-env --url "https://your-gemus.example/api/mcp"
 ```
 
 It securely prompts for `GEMUS_KEY`; optional `GEMUS_URL` for self-hosted/development is supplied
@@ -145,13 +145,13 @@ version-drift gate can't be bypassed by a direct push.
 - Plugin source must be a clean dir/tree (Git clone is clean; a dirty local working tree with
   `node_modules` junctions fails on Windows `os error 87` — the pack script emits a clean tree).
 
-## Still needed for public use
+## Release status and remaining public-use work
 
-1. **Publish `@gemus/mcp-proxy`** (+ `@gemus/codex-backfill-core`) to npm (`publish-mcp-proxy.yml`) so
-   `npx -y @gemus/mcp-proxy` resolves.
-2. ~~Create the public plugin repo and push the packed output~~ — done; sync is now automated by
-   `publish-codex-plugin.yml` (Issue #2094). Remaining one-time admin step: add the
-   `CODEX_PLUGIN_PUSH_TOKEN` secret (see "Distribution" above).
+1. **npm dependencies published (2026-11-03):** `@gemus/codex-backfill-core@0.2.0`,
+   `@gemus/mcp-proxy@0.2.0`, and `@gemus/bridge@0.4.0`. Plugin `0.2.2` pins the published proxy.
+2. **Mirror and client upgrade:** merging this pin update runs `publish-codex-plugin.yml` (Issue #2094).
+   Verify the public mirror contains plugin `0.2.2` and the canonical skills, then upgrade the installed
+   plugin, fully quit and restart Codex, and open a new task. Source changes alone do not upgrade clients.
 3. **Assets/legal**: keep `composerIcon` / `logo` paths plugin-root-relative (`./assets/...`) and
    keep the files in the root `assets/` directory, add marketplace screenshots, and confirm
    `gemus.ai/terms` & `/privacy` before any official-marketplace submission.
